@@ -8,7 +8,7 @@ truth = 0.001, 0.002, 0.0006, 0.0009
 
 time, signal = forward(*truth)
 
-forward_model(*truth).plot(time, signal)
+# forward_model(*truth).plot(time, signal)
 
 recon = inverse_ls(time, signal)
 

@@ -2,7 +2,6 @@ import numpy as np
 import dcmri as dc
 
 
-
 def inverse_ls_model(time, signal):
 
     TS = time[0][1]
@@ -38,7 +37,7 @@ def inverse_ls_model(time, signal):
     )
 
     # --- Train model
-    aorta_liver.train(time, signal, xtol=1e-6, verbose=2)
+    aorta_liver.train(time, signal, verbose=2, xtol=1e-4)
 
     return aorta_liver
 
