@@ -4,8 +4,6 @@ import dcmri as dc
 
 def inverse_ls_model(time, signal):
 
-    TS = time[0][1]
-
     # --- Initialize model
     aorta_liver = dc.AortaLiver2scan(
 
@@ -24,8 +22,7 @@ def inverse_ls_model(time, signal):
         ve = 0.1,
 
         # Acquisition parameters
-        TS = TS,
-        tmax = time[-1][-1] + TS,
+        tmax = time[-1][-1] + 60,
         field_strength = 3,
         TR = 0.004,
         FA = 20,
@@ -37,19 +34,19 @@ def inverse_ls_model(time, signal):
     )
 
     # --- Train model
-    aorta_liver.train(time, signal, verbose=2, xtol=1e-4)
+    aorta_liver.train(time, signal, verbose=2, xtol=1e-3)
 
     return aorta_liver
 
 
-def inverse_ls(time, signal):
+def inverse(time, signal):
 
     aorta_liver = inverse_ls_model(time, signal)
 
     # Extract the parameters
-    ve, khe_i, khe_f, Th_i, Th_f = aorta_liver.params('ve', 'khe_i', 'khe_f', 'Th_i', 'Th_f')
+    ve, khe_i, khe_f, Th_i, Th_f, BAT, BAT2, S0a, S0l = aorta_liver.params('ve', 'khe_i', 'khe_f', 'Th_i', 'Th_f', 'BAT', 'BAT2', 'S0a', 'S0l')
 
     kbh_i = (1 - ve) / Th_i if Th_i > 0 else 0
     kbh_f = (1 - ve) / Th_f if Th_f > 0 else 0
 
-    return khe_i, khe_f, kbh_i, kbh_f
+    return khe_i, khe_f, kbh_i, kbh_f, BAT, BAT2, S0a, S0l

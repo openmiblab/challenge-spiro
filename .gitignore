@@ -2,10 +2,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 ### password
-user_TOTSEG.txt
-user_XNAT.txt
-user_OSF.txt
-build/*
+secret.py
+secrets/*
 
 ### package builds
 .venv/*

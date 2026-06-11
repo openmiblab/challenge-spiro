@@ -8,6 +8,9 @@ version = "0.0.0"
 dependencies = [
   'numpy',
   'dcmri < 0.7.0', 
+  'pydmr',
+  'tqdm',
+  'pandas',
 ]
 
 [tool.setuptools.packages.find]

@@ -2,7 +2,7 @@ import numpy as np
 import dcmri as dc
 
 
-def forward_model(khe_i, khe_f, kbh_i, kbh_f, TS=2.5, t_acq=(45, 45), t_wait=90):
+def forward_model(khe_i, khe_f, kbh_i, kbh_f, time):
 
     ve = 0.1
 
@@ -27,10 +27,9 @@ def forward_model(khe_i, khe_f, kbh_i, kbh_f, TS=2.5, t_acq=(45, 45), t_wait=90)
         Th_f = (1 - ve) / kbh_f if kbh_f > 0 else 0,
 
         # Acquisition parameters
-        TS = TS,
-        tmax = (t_acq[0] + t_wait + t_acq[1]) * 60,
+        tmax = np.concatenate(time).max() + 60,
         BAT = 5 * 60,
-        BAT2 = (t_acq[0] + t_wait + 5) * 60,
+        BAT2 = time[1][0] + 5 * 60,
         field_strength = 3,
         TR = 0.004,
         FA = 20,
@@ -42,21 +41,19 @@ def forward_model(khe_i, khe_f, kbh_i, kbh_f, TS=2.5, t_acq=(45, 45), t_wait=90)
     )
 
 
-def forward(khe_i, khe_f, kbh_i, kbh_f, TS=2.5, t_acq=(45, 45), t_wait=90, SNR=75, rng=None):
+def forward(khe_i, khe_f, kbh_i, kbh_f, time: tuple, rng=None):
 
     # --- Initialize the model
-    aorta_liver = forward_model(khe_i, khe_f, kbh_i, kbh_f, TS=TS, t_acq=t_acq, t_wait=t_wait)
+    aorta_liver = forward_model(khe_i, khe_f, kbh_i, kbh_f, time)
 
-    # --- Acquired time points
-    t_1 = np.arange(0, t_acq[0] * 60, TS)
-    t_2 = np.arange((t_acq[0] + t_wait) * 60, (t_acq[0] + t_wait + t_acq[1]) * 60, TS)
-    time = (t_1, t_2, t_1, t_2)
-
-    # --- Predict signals
+    # --- Predict signals at given time points
     signal = aorta_liver.predict(time)
+
+    # --- Ad noise
+    SNR = 50
     signal = [add_noise(s, s[0] / SNR, rng=rng) for s in signal]
 
-    return time, tuple(signal)
+    return tuple(signal)
 
 
 
