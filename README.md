@@ -57,7 +57,7 @@ Once your solution is registered in `__init__.py`, you can compute a dummy score
 python -m challenge_spiro.compute_dummy_scores
 ```
 
-If you include the benchmark method in the `SOLUTIONS` register, this can take a few hours to compute. When it finishes, you will find a new folder *dummy_secrets* with the outputs, especially a leagure table in csv format with scores and ranking for all the registered methods.
+If you include the benchmark method in the `SOLUTIONS` register, this can take a few hours to compute. When it finishes, you will find a new folder *dummy_secrets* with the outputs, including a league table in csv format.
 
 **Note (1)**: The challenge distribution also contains the script *compute_official_scores.py* which is used to compute the actual score for all submissions. The script is included for transparency but can only be run by organisers who have access to the `secrets` folder. 
 
