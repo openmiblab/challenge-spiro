@@ -8,6 +8,8 @@
 
 [![Code License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=apache&color=blue)](https://www.apache.org/licenses/LICENSE-2.0) [![Data License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) 
 
+---
+
 ### :pushpin: Summary of the challenge
 
 This repository provides a forward model function in python with the following signature: 
@@ -26,6 +28,7 @@ Your solution will be ranked based on a *global score* that consists of two equa
 - *accuracy score*: compares `parameters` generated with your solution against unseen ground truth simulated with `forward`
 - *generalizability score*: compares `signals` reconstructed with your solution against measured data in an unseen dataset.
 
+---
 
 ## 🚀 Installation
 
@@ -44,7 +47,9 @@ For installation with pip (alternative), create and activate a virtual environme
 pip install -e .
 ```
 
-You can test your installation by running the case study notebook *docs/case_study.ipynb*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution, and it includes some diagnostics that will be useful when you evaluate your solution.
+You can test your installation by running the case study notebook *docs/case_study.ipynb*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution, and it showcases some diagnostics that will be useful when you evaluate your solution.
+
+---
 
 ## 🛠️ Testing your solution
 
@@ -63,8 +68,10 @@ If you include the benchmark method in the `SOLUTIONS` register, this can take a
 **Note (1)**: The challenge distribution also contains the script *compute_official_scores.py* which is used to compute the actual score for all submissions. The script is included for transparency but can only be run by organisers who have access to the `secrets` folder. 
 
 **Note (2)**: The two existing solutions included with the challenge distribution are:
-- `benchmark.py`: This is the least-squares iterative optimization method that is used in the publications. It is therefore a useful benchmark for evaluating our solution.
-- `normative.py`: This is a solution which is used to normalize the score. It is of little value in practice as it returns constants for the key parameters. By definition, it should score 100% on all scores, so you would expect any meaningful solution to have a score higher than that. 
+- `benchmark.py`: This is the least-squares iterative optimization method that is used in the publications. It is therefore a useful benchmark for evaluating your solution.
+- `normative.py`: This is a solution which is used to normalize the score. It is of little value in practice as it returns constants for the key parameters. By definition, it should score 100%.
+
+---
   
 ## 📤 Submission of solutions
 
@@ -77,19 +84,43 @@ To submit your solution, please create a single zip file containing:
 
 Please send the zip file as an email attachment or a downloadable link to the challenge organisers.
 
+**Note**: You do *not* need to submit the training script or the training data. 
+
+---
+
 ## :file_folder: Code structure
 
 The **challenge-spiro** distribution contains 3 top-level folders:
-- *src*: The source code for the challenge with tools to generate synthetic data and compute scores, or visualise results. Apart from the forward model it also includes two examples of inverse solutions (not using deep learning).
-- *secrets*: This folder is only accessible to challenge organisers and contains unseen experimental data as well as the unseed digital reference object for computing the scores.
-- *docs*: A folder with jupyter notebooks illustrating some of the functionality included.
+- **src**: The source code for the challenge with tools to generate synthetic data and compute scores, or visualise results. Apart from the forward model it also includes two examples of inverse solutions (not using deep learning).
+- **docs**: A folder with a jupyter notebook illustrating some of the functionality included.
+- **secrets**: This folder is only accessible to challenge organisers. It contains unseen experimental data as well as the unseen seed to generate the digital reference object that is used in the official score.
 
-Apart from two example solutions and the top-level scripts to compute dummy and official scores, the *src* folder also contains modules with the following utilities (`utils`):
+The **src** folder has the top level scripts to compute official scores (organisers only) and dummy scores. The subfolder **src.solutions** contains python modules with solutions and model weights needed to run them. The solutions can be imported as:
 
-- *model*: Defines the forward model and the plot function
-- *dro*: (digital reference object) uses the forward model and random number generators to create virtual populations that are used for computing the score.
-- *score*: All functionality needed to compute the scores and save the results into a league table. 
+```python
+from challenge_spiro.solutions.benchmark import inverse
+```
 
+The **src.utils** has key functionality in three modules:
+
+- *model*: Defines the forward model and the plot function, which can be imported into python code with:
+
+```python
+from challenge_spiro.utils.model import forward, plot
+```
+
+- *dro*: uses the forward model and random number generators to generate a virtual subject (`generate_subject`) and a digital reference object including a virtual population with data and ground truths (`generate_dro`). There are used in the score and can also be used to generate new data:
+
+```python
+from challenge_spiro.utils.dro import generate_subject, generate_dro
+```
+
+- *score*: All functionality needed to compute the scores and save the results into a league table. The scoring is done by the top level function `score_all_submissions`:
+
+```python
+from challenge_spiro.utils.score import score_all_submissions
+```
+---
 
 ## 📚 Context
 
@@ -103,6 +134,8 @@ An open access preprint with more detail is here:
 
 The software implementation of the model is taken from the [dmri.org](https://dcmri.org/) python package, which also has examples showing these data and methods.
 
+
+---
 
 ## 💰 Funder
 

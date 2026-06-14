@@ -19,7 +19,7 @@ def accuracy_loss(inverse_model, dro_file):
         dro = pickle.load(f)
 
     npix = len(dro['truth'])
-    err = 0
+    err = []
 
     for i in tqdm(range(npix), desc='Computing accuracy loss..'):
 
@@ -31,9 +31,10 @@ def accuracy_loss(inverse_model, dro_file):
         recon = np.array(list(recon.values()))
         truth = np.array(list(dro['truth'][i].values()))
 
-        err += np.linalg.norm(recon - truth) / np.linalg.norm(truth)
+        err_i = np.linalg.norm(recon - truth) / np.linalg.norm(truth)
+        err.append(err_i)
 
-    return err / npix
+    return np.percentile(err, 90)
 
 
 def parse_data(data_file, subj, visit):
@@ -75,8 +76,7 @@ def generalizability_loss(inverse_model, data_file):
     data = pydmr.read(data_file, 'nest')
     rois = data['rois']
 
-    err = 0
-    nsig = 0
+    err = []
     for subj in tqdm(rois.keys(), desc='Computing generalizability loss..'):
         for visit in rois[subj].keys():
 
@@ -86,10 +86,10 @@ def generalizability_loss(inverse_model, data_file):
             signal_recon = forward(params_recon, time)
 
             for i in range(4):
-                err += np.linalg.norm(signal_recon[i] - signal[i]) / np.linalg.norm(signal[i])
-                nsig += 1
+                err_i = np.linalg.norm(signal_recon[i] - signal[i]) / np.linalg.norm(signal[i])
+                err.append(err_i)
 
-    return err / nsig
+    return np.percentile(err, 90)
 
 
 
