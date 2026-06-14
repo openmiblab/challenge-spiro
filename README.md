@@ -70,10 +70,10 @@ If you include the benchmark method in the `SOLUTIONS` register, this can take a
 
 To submit your solution, please create a single zip file containing:
 
-- Your python module with the function.
-- Trained model weights.
-- A requirements.txt file listing any requirements on top of those already included.
-- The league table with dummy scores so we can verify our local implementation.
+1. Your python module with the function.
+2. Trained model weights.
+3. A requirements.txt file listing any requirements on top of those already included.
+4. The league table with dummy scores so we can verify our local implementation.
 
 Please send the zip file as an email attachment or a downloadable link to the challenge organisers.
 
