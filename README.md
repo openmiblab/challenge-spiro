@@ -43,7 +43,7 @@ For installation with pip (alternative), create and activate a virtual environme
 pip install -e .
 ```
 
-You can test your installation by running the case study notebook *docs/case_study.ipng*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution.
+You can test your installation by running the case study notebook *docs/case_study.ipynb*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution.
 
 ## 🛠️ Testing your solution
 
