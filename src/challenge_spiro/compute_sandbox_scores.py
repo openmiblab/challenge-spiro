@@ -13,7 +13,7 @@ of the scoring suite without requiring access to production credentials or live 
 Execution Stages
 ----------------
 1. **Sandbox Workspace Setup**: Creates an isolated sandbox folder layout 
-   (`dummy_secrets/`) so production logs remain untouched.
+   (`sandbox/`) so production logs remain untouched.
 2. **Remote Data Acquisition**: Triggers `dc.fetch` to locally cache a standardized, 
    known multi-subject imaging database.
 3. **Synthetic Reference Assembly**: Simulates a baseline population cohort under 
@@ -26,7 +26,7 @@ Directory Structure Layout
 The script maintains a localized, self-contained workspace footprint:
 
     current_working_directory/
-    └── dummy_secrets/           <-- (Auto-created sandbox boundary)
+    └── sandbox/           <-- (Auto-created sandbox boundary)
         ├── dro.npz              <-- Test cohort database
         └── league_table.csv     <-- Isolated validation leaderboard
 
@@ -43,7 +43,7 @@ Execute this script from your terminal to run integration tests across the chall
 
 .. code-block:: bash
 
-    $ python -m challenge_spiro.compute_dummy_scores
+    $ python -m challenge_spiro.compute_sandbox_scores
 """
 
 import os
@@ -56,7 +56,7 @@ from challenge_spiro.utils.dro import generate_dro
 # 1. SANDBOX INTERFACE & PATH SETUP
 # ==============================================================================
 # Establish isolated test path boundaries away from core system configurations
-secrets_dir = os.path.join(os.getcwd(), "dummy_secrets")
+secrets_dir = os.path.join(os.getcwd(), "sandbox")
 os.makedirs(secrets_dir, exist_ok=True)
 
 # Pull open-access reference human liver dataset via dcmri client fetcher

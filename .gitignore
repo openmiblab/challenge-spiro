@@ -4,6 +4,7 @@
 ### password
 secret.py
 secrets/*
+sandbox/*
 
 ### package builds
 .venv/*

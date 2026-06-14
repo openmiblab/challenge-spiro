@@ -2,34 +2,38 @@
   <img src="_static/spiro-logo.png" alt="SPIRO Logo" width="600"/>
 </p>
 
-# SPIRO Challenge: Fast Mechanistic Model Inversion
+# SPIRO Challenge
+
+## Fast mechanistic model inversion
 
 [![Code License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=apache&color=blue)](https://www.apache.org/licenses/LICENSE-2.0) [![Data License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) 
 
 ---
 
-### :pushpin: Summary of the challenge
+## :pushpin: Summary of the challenge
 
 This repository provides a forward model function in python with the following signature: 
 
 ```python
-signal = forward(parameters: dict, time: tuple, **settings) -> tuple
+signal = forward(parameters: dict, time: tuple, **settings)
 ```
 
-The `forward` model simulates an experiment defined by some `settings`. It aims to derive a number of  `parameters` from `signal` arrays measured at given `time` points. The challenge is to **train a deep-learning model that solves the inverse problem**. The model inference should be wrapped up in a function with the following signature:
+The `forward` model simulates an experiment defined by some `settings`. It aims to derive a number of  `parameters` from `signal` arrays measured at given `time` points. The challenge is to **train a deep-learning architecture that efficiently solves this inverse problem**. Your inference algorithm must be exposed through a standard wrapper function matching this exact structural signature:
 
 ```python
-parameters = my_solution(time: tuple, signal: tuple, **settings) -> dict
+parameters = my_solution(time: tuple, signal: tuple, **settings)
 ```
 ---
 
 ## 📊 Scoring
 
 Your solution will be ranked based on a *global score* that consists of two equally weighted parts: 
-- **Accuracy Score (Synthetic Data):**: Measures how close your estimated `parameters` are to exact simulated physiological values in a virtual population. The virtual data are constructed by passing randomly generated `parameters` and `time` arrays through the `forward()` model.
-- **Generalizability Score (Experimental Data):**: Evaluates "self-consistency" on real clinical datasets where true parameters are hidden. Your predicted parameters are passed back through the `forward()` model to see how perfectly they recreate the raw observed physical curves.
+- **Accuracy Score (Synthetic Data):**: Measures how close your estimated `parameters` are to exact physiological values in a virtual population. The virtual data are constructed by passing randomly generated `parameters` and `time` arrays through the `forward()` model.
+- **Generalizability Score (Experimental Data):**: Evaluates "self-consistency" on real clinical datasets where true parameters are hidden. Your predicted parameters are passed back through the `forward()` model to see how perfectly they recreate the raw observed signals.
 
-Solution scores are expressed as percentages relative to a **Normative Solution (100%)**. Higher percentages (>100%) indicate superior parameter estimation or signal minimization than the normative solution. The normative solution is of no practical value as it returns constants for key physiological parameters, so one would expect practical solutions to score above 100%.
+Solution scores are expressed as percentages relative to a **Normative Solution (100%)**. Higher percentages (>100%) indicate superior parameter estimation or signal minimization than the normative solution. The normative solution is of no practical value as it returns constants for key physiological parameters, so one would expect viable solutions to score above 100%.
+
+Assessors will also consider the clarity of your code as a secondary criterion.
 
 ---
 
@@ -39,14 +43,14 @@ To install the required materials, clone or download this repository and navigat
 
 For installation with conda (recommended):
 
-```
+```bash
 conda env create -n spiro -f env.yml
 conda activate spiro
 ```
 
 For installation with pip (alternative), create and activate a virtual environment and run:
 
-```
+```bash
 pip install -e .
 ```
 
@@ -56,7 +60,7 @@ You can test your installation by running the case study notebook *docs/case_stu
 
 ## 🛠️ Testing your solution
 
-The challenge distribution includes two solutions that you can use as benchmarks, as well as some functionality to create a dummy score for your solution and the benchmarks. The dummy score is exactly the same as the official score, except that it uses known, public data rather than unseen data.
+The challenge distribution includes two solutions that you can use as benchmarks, as well as some functionality to create a sandbox score for your solution and the benchmarks. The sandbox score is exactly the same as the official score, except that it uses known, public data rather than unseen data.
 
 To test your solution, first drop a single python module in the *solutions* folder. The module must contain a function with the required signature. Second, register your solution by including it in the `SOLUTIONS` dictionary in `challenge_spiro/__init__.py`: 
 
@@ -68,34 +72,32 @@ SOLUTIONS = {
     "benchmark": benchmark_inverse,
     "team_deep_learner": my_nn_solution,  # Add your identifier and handle here
 }
-
-
-All solutions listed in this dictionary will be scored and added to the league table, so if you want to compare multiple solutions during development, just add them in there. 
-
-Once your solution is registered in `__init__.py`, you can compute a dummy score by running:
-
-```
-python -m challenge_spiro.compute_dummy_scores
 ```
 
-If you include the benchmark method in the `SOLUTIONS` register, this can take a few hours to compute. When it finishes, you will find a new folder *dummy_secrets* with the outputs, including a league table in csv format.
+All solutions listed in this dictionary will be scored and added to the league table, so if you want to compare multiple solutions during development, just add them in there. Once your solution is registered, you can compute a sandbox score by running:
+
+```bash
+python -m challenge_spiro.compute_sandbox_scores
+```
+
+If you include the benchmark method in the `SOLUTIONS` register, this can take a few hours to compute. When it finishes, you will find a new folder *sandbox* with the outputs, including a league table in csv format.
 
 **Note (1)**: The challenge distribution also contains the script *compute_official_scores.py* which is used to compute the actual score for all submissions. The script is included for transparency but can only be run by organisers who have access to the `secrets` folder. 
 
 **Note (2)**: The two existing solutions included with the challenge distribution are:
 - `benchmark.py`: This is the least-squares iterative optimization method that is used in the publications. It is therefore a useful benchmark for evaluating your solution.
-- `normative.py`: This is a solution which is used to normalize the score. It is of little value in practice as it returns constants for the key parameters. By definition, it should score 100%.
+- `normative.py`: This is a solution which is used to normalize the score. It is of no practical value as it returns constants for the key parameters. By definition, it should score 100%, which can be used as an internal consistency check.
 
 ---
   
 ## 📤 Submission of solutions
 
-To submit your solution, please create a single zip file containing:
+To submit your solution for scoring, please create a single zip file containing:
 
 1. Your python module with the function.
 2. Trained model weights.
 3. A requirements.txt file listing any requirements on top of those already included.
-4. The league table with dummy scores so we can verify our local implementation.
+4. The league table with sandbox scores so we can verify our local implementation.
 
 Please send the zip file as an email attachment or a downloadable link to the challenge organisers.
 
@@ -110,13 +112,13 @@ The **challenge-spiro** distribution contains 3 top-level folders:
 - **docs**: A folder with a jupyter notebook illustrating some of the functionality included.
 - **secrets**: This folder is only accessible to challenge organisers. It contains unseen experimental data as well as the unseen seed to generate the digital reference object that is used in the official score.
 
-The **src** folder has the top level scripts to compute official scores (organisers only) and dummy scores. The subfolder **src.solutions** contains python modules with solutions and model weights needed to run them. The solutions can be imported as:
+The **src** folder has the top level scripts to compute official scores (organisers only) and sandbox scores. The subfolder **src/solutions** contains python modules with solutions and model weights needed to run them. The solutions can be imported as:
 
 ```python
 from challenge_spiro.solutions.benchmark import inverse
 ```
 
-The **src.utils** has key functionality in three modules:
+The **src/utils** has key functionality in three modules:
 
 - *model*: Defines the forward model and the plot function, which can be imported into python code with:
 
