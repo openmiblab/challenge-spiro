@@ -43,15 +43,13 @@ For installation with pip (alternative), create and activate a virtual environme
 pip install -e .
 ```
 
-You can test your installation by running the case study notebook *docs/case_study.ipynb*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution.
+You can test your installation by running the case study notebook *docs/case_study.ipynb*. This is a also a good way to familiarise yourself with some of the functionality included in this distribution, and it includes some diagnostics that will be useful when you evaluate your solution.
 
 ## 🛠️ Testing your solution
 
-The challenge distribution includes two solutions that you can use as benchmarks, as well as some functionality to create a dummy score for your solution as well as for the benchmarks. The dummy score is exactly the same as the official score, except that it uses known, public data rather than unseen data.
+The challenge distribution includes two solutions that you can use as benchmarks, as well as some functionality to create a dummy score for your solution and the benchmarks. The dummy score is exactly the same as the official score, except that it uses known, public data rather than unseen data.
 
 To test your solution, drop a single python module in the *solutions* folder. The module must contain a function with the required signature. To register your solution, include it in the `SOLUTIONS` dictionary in the `__init__.py` file of `challenge_spiro`. All solutions listed in this dictionary will be scored and added to the league table, so if you want to compare multiple solutions during development, just add them in there. 
-
-If you want to test your solution during development on either measured or synthetic data, follow the steps from the notebook *docs/case_study.ipynb*. 
 
 Once your solution is registered in `__init__.py`, you can compute a dummy score by running:
 
