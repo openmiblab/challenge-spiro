@@ -1,11 +1,10 @@
-# List all submissions here 
+# List all solutions here 
 
-# The LS solution is included here so it can be used as benchmark
-from .utils.solution_ls import inverse as inverse_ls
-from .utils.solution_benchmark import inverse as inverse_const
+from .solutions.benchmark import inverse as inverse_bench
+from .solutions.normative import inverse as inverse_norm
 
-SUBMISSIONS = {
-    # 'Least Squares': inverse_ls,
-    'Dummy': inverse_const,
+SOLUTIONS = {
+    'Normative': inverse_norm,
+    'Benchmark': inverse_bench,
 }
 

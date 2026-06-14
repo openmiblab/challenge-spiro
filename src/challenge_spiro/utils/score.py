@@ -1,6 +1,6 @@
 import os
 import csv
-import os
+import pickle
 from datetime import datetime
 
 import numpy as np
@@ -8,40 +8,66 @@ import pandas as pd
 import pydmr
 from tqdm import tqdm
 
-from challenge_spiro import SUBMISSIONS
+from challenge_spiro import SOLUTIONS
 from challenge_spiro.utils.model import forward
-from challenge_spiro.utils.solution_benchmark import inverse as inverse_benchmark
+from challenge_spiro.solutions.normative import inverse as inverse_normative
 
 
 def accuracy_loss(inverse_model, dro_file):
 
-    dro = np.load(dro_file)
+    with open(dro_file, "rb") as f:
+        dro = pickle.load(f)
 
-    npix = dro['khe_i'].size
+    npix = len(dro['truth'])
     err = 0
 
     for i in tqdm(range(npix), desc='Computing accuracy loss..'):
-        time = (
-            dro['time_1'], 
-            dro['time_2'],
-            dro['time_1'], 
-            dro['time_2'],
-        )
-        signal = (
-            dro['aorta_1'][i,:], 
-            dro['aorta_2'][i,:],
-            dro['liver_1'][i,:], 
-            dro['liver_2'][i,:],
-        )
 
-        khe_i, khe_f, kbh_i, kbh_f = inverse_model(time, signal)
+        time = dro['data'][i][0]
+        signal = dro['data'][i][1]
 
-        rec = np.array([khe_i, khe_f, kbh_i, kbh_f])
-        orig = np.array([dro['khe_i'][i], dro['khe_f'][i], dro['kbh_i'][i], dro['kbh_f'][i]])
+        recon = inverse_model(time, signal)
 
-        err += np.linalg.norm(rec - orig) / np.linalg.norm(orig)
+        recon = np.array(list(recon.values()))
+        truth = np.array(list(dro['truth'][i].values()))
+
+        err += np.linalg.norm(recon - truth) / np.linalg.norm(truth)
 
     return err / npix
+
+
+def parse_data(data_file, subj, visit):
+
+    data = pydmr.read(data_file, 'nest')
+
+    roi = data['rois'][subj][visit]
+    par = data['pars'][subj][visit]
+
+    time = (
+        roi['time_1'][roi['aorta_1_accept']] - roi['time_1'][0],
+        roi['time_2'][roi['aorta_2_accept']] - roi['time_1'][0],
+        roi['time_1'][roi['liver_1_accept']] - roi['time_1'][0],
+        roi['time_2'][roi['liver_2_accept']] - roi['time_1'][0],
+    )
+    signal = (
+        roi['aorta_1'][roi['aorta_1_accept']],
+        roi['aorta_2'][roi['aorta_2_accept']],
+        roi['liver_1'][roi['liver_1_accept']],
+        roi['liver_2'][roi['liver_2_accept']],
+    )
+    settings = {
+        'weight': par['weight'],
+        'field_strength': 3,
+        'TR': par['TR'],
+        'FA': par['FA_1'],
+        'FA2': par['FA_2'],
+        'agent': 'gadoxetate',
+        'dose': par['dose_1'],
+        'dose2': par['dose_2'],
+        'rate': 1,
+    }
+    return time, signal, settings
+
 
 
 def generalizability_loss(inverse_model, data_file):
@@ -54,26 +80,13 @@ def generalizability_loss(inverse_model, data_file):
     for subj in tqdm(rois.keys(), desc='Computing generalizability loss..'):
         for visit in rois[subj].keys():
 
-            roi = rois[subj][visit]
+            time, signal, settings = parse_data(data_file, subj, visit)
 
-            time = (
-                roi['time_1'][roi['aorta_1_accept']] - roi['time_1'][0],
-                roi['time_2'][roi['aorta_2_accept']] - roi['time_1'][0],
-                roi['time_1'][roi['liver_1_accept']] - roi['time_1'][0],
-                roi['time_2'][roi['liver_2_accept']] - roi['time_1'][0],
-            )
-            signal = (
-                roi['aorta_1'][roi['aorta_1_accept']],
-                roi['aorta_2'][roi['aorta_2_accept']],
-                roi['liver_1'][roi['liver_1_accept']],
-                roi['liver_2'][roi['liver_2_accept']],
-            )
-
-            results = inverse_model(time, signal)
-            signal_rec = forward(*results, time)
+            params_recon = inverse_model(time, signal, **settings)
+            signal_recon = forward(params_recon, time)
 
             for i in range(4):
-                err += np.linalg.norm(signal_rec[i] - signal[i]) / np.linalg.norm(signal[i])
+                err += np.linalg.norm(signal_recon[i] - signal[i]) / np.linalg.norm(signal[i])
                 nsig += 1
 
     return err / nsig
@@ -82,21 +95,21 @@ def generalizability_loss(inverse_model, data_file):
 
 def global_score(inverse_model, dro_file, data_file):
 
+    print('Computing accuracy loss for normative..')
+    loss_1_normative = accuracy_loss(inverse_normative, dro_file)
+
+    print('Computing generalizability loss for normative..')
+    loss_2_normative = generalizability_loss(inverse_normative, data_file)
+
     print('Computing accuracy loss..')
     loss_1 = accuracy_loss(inverse_model, dro_file)
 
     print('Computing generalizability loss..')
     loss_2 = generalizability_loss(inverse_model, data_file)
 
-    print('Computing accuracy loss for benchmark..')
-    loss_1_benchmark = accuracy_loss(inverse_benchmark, dro_file)
-
-    print('Computing generalizability loss for benchmark..')
-    loss_2_benchmark = generalizability_loss(inverse_benchmark, data_file)
-
     # Return scores as a percentage of benchmark score
-    accuracy_score = 100 * loss_1_benchmark / loss_1
-    generalizability_score = 100 * loss_2_benchmark / loss_2
+    accuracy_score = 100 * loss_1_normative / loss_1
+    generalizability_score = 100 * loss_2_normative / loss_2
     global_score = 0.5 * (accuracy_score + generalizability_score)
 
     return {
@@ -197,7 +210,7 @@ def score_all_submissions(
     data_file,
     league_table
 ):
-    for submitter, inverse_model in SUBMISSIONS.items():
+    for submitter, inverse_model in SOLUTIONS.items():
         if submitter_exists(submitter, league_table):
             print(f"Submitter {submitter} has already been scored. If you want to compute the score again, remove the row manually from the league table and recompute scores.")
         else:

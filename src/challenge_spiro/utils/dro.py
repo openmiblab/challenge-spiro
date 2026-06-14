@@ -1,29 +1,53 @@
 import os
+import pickle
+
 import numpy as np
 from tqdm import tqdm
 
 from challenge_spiro.utils.model import forward
 
 
-def generate_subject():
-    dt = 1.5
-    tacq_1 = np.arange(0, 45 * 60, dt)
-    tacq_2 = np.arange((45 + 90) * 60, (45 + 90 + 45) * 60, dt)
+def generate_subject(rng=None):
 
-    khe_i = 30 / 6000
-    khe_f = 30 / 6000
-    kbh_i = 2.2 / 6000
-    kbh_f = 2.2 / 6000
-    BAT = 5 * 60
-    BAT2 = (45 + 90 + 5) * 60
-    S0a = 2
-    S0l = 3
+    if rng is None:
+        rng = np.random.default_rng()
 
-    params = (khe_i, khe_f, kbh_i, kbh_f, BAT, BAT2, S0a, S0l)
+    # Acquisition parameters
+    dt = rng.uniform(low=1.5, high=2.0)
+    t_acq = 60 * rng.uniform(low=40, high=50)
+    t_wait = 60 * rng.uniform(low=60, high=120)
+
+    # Time points
+    tacq_1 = np.arange(0, t_acq, dt)
+    tacq_2 = np.arange(t_acq + t_wait, t_acq + t_wait + t_acq, dt)
     time = (tacq_1, tacq_2, tacq_1, tacq_2)
 
-    signal = forward(*params, time)
-    return params, time, signal
+    # Parameters
+    params = {
+        'S0a': rng.uniform(low=0.0, high=1e3), 
+        'S0l': rng.uniform(low=0.0, high=1e3),
+        'BAT': rng.uniform(low=60.0, high=600), 
+        'BAT2': rng.uniform(low=60.0, high=600) + tacq_2[0], 
+        'CO': rng.uniform(low=0.0, high=300), 
+        'Thl': rng.uniform(low=0.0, high=30), 
+        'Dhl': rng.uniform(low=0.05, high=0.95), 
+        'To': rng.uniform(low=0.0, high=60), 
+        'Eo': rng.uniform(low=0.0, high=0.5), 
+        'Toe': rng.uniform(low=0.0, high=800), 
+        'Eb': rng.uniform(low=0.01, high=0.15), 
+        've': rng.uniform(low=0.01, high=0.6), 
+        'Te': rng.uniform(low=0.1, high=60), 
+        'De': rng.uniform(low=0.0, high=1), 
+        'khe_i': rng.uniform(low=0.0, high=1e-2), 
+        'khe_f': rng.uniform(low=0.0, high=1e-2), 
+        'Th_i': rng.uniform(low=10 * 60, high=10 * 60 * 60), 
+        'Th_f': rng.uniform(low=10 * 60, high=10 * 60 * 60), 
+    }
+    params['S02a'] = params['S0a'] * rng.uniform(low=0.75, high=1.25) 
+    params['S02l'] = params['S0l'] * rng.uniform(low=0.75, high=1.25) 
+
+    return params, time
+
 
 
 def generate_dro(seed, file):
@@ -32,49 +56,24 @@ def generate_dro(seed, file):
         print('Skipping calculation of DRO (already exists)')
         return
     
-    _, time, signal = generate_subject()
-
-    rng = np.random.default_rng(seed=seed)
     nsubj = 64
 
-    khe_i = rng.uniform(low=0.0, high=1e-2, size=nsubj)
-    khe_f = rng.uniform(low=0.0, high=1e-2, size=nsubj)
-    kbh_i = rng.uniform(low=0.0, high=1e-2, size=nsubj)
-    kbh_f = rng.uniform(low=0.0, high=1e-2, size=nsubj)
+    # Initializing RNG from seed so the DRO can be reproduced
+    rng = np.random.default_rng(seed=seed)
 
-    aorta_1 = np.zeros((nsubj, signal[0].size))
-    aorta_2 = np.zeros((nsubj, signal[1].size))
-    liver_1 = np.zeros((nsubj, signal[2].size))
-    liver_2 = np.zeros((nsubj, signal[3].size))
+    # Compute DRO separating data from ground truth
+    dro = {'data': [], 'truth': []}
+    for _ in tqdm(range(nsubj), desc='Computing DRO'):
 
-    for i in tqdm(range(nsubj), desc='Computing DRO'):
+        params_i, time_i = generate_subject(rng)
+        signal_i = forward(params_i, time_i)
 
-        signal_i = forward(khe_i[i], khe_f[i], kbh_i[i], kbh_f[i], time, rng=rng)
-
-        aorta_1[i, :] = signal_i[0]
-        aorta_2[i, :] = signal_i[1]
-        liver_1[i, :] = signal_i[2]
-        liver_2[i, :] = signal_i[3]
+        dro['truth'].append(params_i)
+        dro['data'].append((time_i, signal_i))
 
     print(f'Saving dro to {file}')
 
-    np.savez(
-        file, 
-        khe_i=khe_i, 
-        khe_f=khe_f, 
-        kbh_i=kbh_i, 
-        kbh_f=kbh_f, 
-        aorta_1=aorta_1,
-        aorta_2=aorta_2,
-        liver_1=liver_1,
-        liver_2=liver_2,
-        time_1=time[0],
-        time_2=time[1]
-    )
+    with open(file, "wb") as f:
+        pickle.dump(dro, f)
 
     print(f'Finished saving dro to {file}')
-
-
-
-        
-
