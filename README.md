@@ -1,10 +1,8 @@
-![example-result](_static/spiro-logo.png)
+<p align="center">
+  <img src="_static/spiro-logo.png" alt="SPIRO Logo" width="600"/>
+</p>
 
----
-
-# SPIRO challenge
-
-## Fast mechanistic model inversion
+# SPIRO Challenge: Fast Mechanistic Model Inversion
 
 [![Code License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=apache&color=blue)](https://www.apache.org/licenses/LICENSE-2.0) [![Data License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) 
 
@@ -15,18 +13,23 @@
 This repository provides a forward model function in python with the following signature: 
 
 ```python
-signal = forward(parameters, time, **settings)
+signal = forward(parameters: dict, time: tuple, **settings) -> tuple
 ```
 
 The `forward` model simulates an experiment defined by some `settings`. It aims to derive a number of  `parameters` from `signal` arrays measured at given `time` points. The challenge is to **train a deep-learning model that solves the inverse problem**. The model inference should be wrapped up in a function with the following signature:
 
 ```python
-parameters = my_solution(time, signal, **settings)
+parameters = my_solution(time: tuple, signal: tuple, **settings) -> dict
 ```
+---
+
+## 📊 Scoring
 
 Your solution will be ranked based on a *global score* that consists of two equally weighted parts: 
-- *accuracy score*: compares `parameters` generated with your solution against unseen ground truth simulated with `forward`
-- *generalizability score*: compares `signals` reconstructed with your solution against measured data in an unseen dataset.
+- **Accuracy Score (Synthetic Data):**: Measures how close your estimated `parameters` are to exact simulated physiological values in a virtual population. The virtual data are constructed by passing randomly generated `parameters` and `time` arrays through the `forward()` model.
+- **Generalizability Score (Experimental Data):**: Evaluates "self-consistency" on real clinical datasets where true parameters are hidden. Your predicted parameters are passed back through the `forward()` model to see how perfectly they recreate the raw observed physical curves.
+
+Solution scores are expressed as percentages relative to a **Normative Solution (100%)**. Higher percentages (>100%) indicate superior parameter estimation or signal minimization than the normative solution. The normative solution is of no practical value as it returns constants for key physiological parameters, so one would expect practical solutions to score above 100%.
 
 ---
 
@@ -55,7 +58,19 @@ You can test your installation by running the case study notebook *docs/case_stu
 
 The challenge distribution includes two solutions that you can use as benchmarks, as well as some functionality to create a dummy score for your solution and the benchmarks. The dummy score is exactly the same as the official score, except that it uses known, public data rather than unseen data.
 
-To test your solution, drop a single python module in the *solutions* folder. The module must contain a function with the required signature. To register your solution, include it in the `SOLUTIONS` dictionary in the `__init__.py` file of `challenge_spiro`. All solutions listed in this dictionary will be scored and added to the league table, so if you want to compare multiple solutions during development, just add them in there. 
+To test your solution, first drop a single python module in the *solutions* folder. The module must contain a function with the required signature. Second, register your solution by including it in the `SOLUTIONS` dictionary in `challenge_spiro/__init__.py`: 
+
+```python
+from challenge_spiro.solutions.my_custom_nn import inverse as my_nn_solution
+
+SOLUTIONS = {
+    "normative": normative_inverse,
+    "benchmark": benchmark_inverse,
+    "team_deep_learner": my_nn_solution,  # Add your identifier and handle here
+}
+
+
+All solutions listed in this dictionary will be scored and added to the league table, so if you want to compare multiple solutions during development, just add them in there. 
 
 Once your solution is registered in `__init__.py`, you can compute a dummy score by running:
 
