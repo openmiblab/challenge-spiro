@@ -26,6 +26,7 @@ Your solution will be ranked based on a *global score* that consists of two equa
 - *accuracy score*: compares `parameters` generated with your solution against unseen ground truth simulated with `forward`
 - *generalizability score*: compares `signals` reconstructed with your solution against measured data in an unseen dataset.
 
+
 ## 🚀 Installation
 
 To install the required materials, clone or download this repository and navigate to the top folder `challenge-spiro`. 
@@ -64,6 +65,17 @@ If you include the benchmark method in the `SOLUTIONS` register, this can take a
 **Note (2)**: The two existing solutions included with the challenge distribution are:
 - `benchmark.py`: This is the least-squares iterative optimization method that is used in the publications. It is therefore a useful benchmark for evaluating our solution.
 - `normative.py`: This is a solution which is used to normalize the score. It is of little value in practice as it returns constants for the key parameters. By definition, it should score 100% on all scores, so you would expect any meaningful solution to have a score higher than that. 
+  
+## 📤 Submission of solutions
+
+To submit your solution, please create a single zip file containing:
+
+- Your python module with the function.
+- Trained model weights.
+- A requirements.txt file listing any requirements on top of those already included.
+- The league table with dummy scores so we can verify our local implementation.
+
+Please send the zip file as an email attachment or a downloadable link to the challenge organisers.
 
 ## :file_folder: Code structure
 
