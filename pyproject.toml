@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "challenge-spiro"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
-  'numpy',
+  'numpy==2.2.6',
   'dcmri < 0.7.0', 
   'pydmr',
   'tqdm',
