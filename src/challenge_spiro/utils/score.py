@@ -81,7 +81,7 @@ import pandas as pd
 import pydmr
 from tqdm import tqdm
 
-from challenge_spiro import SOLUTIONS
+from challenge_spiro.solutions.registered import SOLUTIONS
 from challenge_spiro.utils.model import forward
 from challenge_spiro.solutions.provided.normative import inverse as inverse_normative
 
