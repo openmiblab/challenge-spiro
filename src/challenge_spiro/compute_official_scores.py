@@ -46,7 +46,7 @@ Execute this module directly from your terminal inside the challenge workspace r
 
 import os
 
-from challenge_spiro.utils.score import score_all_submissions
+from challenge_spiro.utils.score import score_all_solutions
 from challenge_spiro.utils.dro import generate_dro
 
 # ==============================================================================
@@ -79,4 +79,4 @@ generate_dro(dro_seed, dro_file)
 # 3. SCORE EVALUATION & RANKING RUN
 # ==============================================================================
 # Pass processed parameters out to the grading stack to update standings
-score_all_submissions(dro_file, data_file, league_table)
+score_all_solutions(dro_file, data_file, league_table)

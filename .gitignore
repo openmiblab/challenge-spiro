@@ -2,9 +2,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 ### password
-secret.py
 secrets/*
 sandbox/*
+submissions/*
+src/challenge_spiro/solutions/submitted/*
 
 ### package builds
 .venv/*

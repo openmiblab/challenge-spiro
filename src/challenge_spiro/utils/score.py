@@ -81,9 +81,9 @@ import pandas as pd
 import pydmr
 from tqdm import tqdm
 
-from challenge_spiro import SOLUTIONS
+from challenge_spiro.solutions.registered import SOLUTIONS
 from challenge_spiro.utils.model import forward
-from challenge_spiro.solutions.normative import inverse as inverse_normative
+from challenge_spiro.solutions.provided.normative import inverse as inverse_normative
 
 
 
@@ -225,7 +225,8 @@ def generalizability_loss(inverse_model, data_file):
             time, signal, settings = parse_data(data_file, subj, visit)
 
             params_recon = inverse_model(time, signal, **settings)
-            signal_recon = forward(params_recon, time)
+            # signal_recon = forward(params_recon, time) # BUG v0.0.0: Not passing settings!!!!
+            signal_recon = forward(params_recon, time, **settings) # BUG fix v0.0.1
 
             for i in range(4):
                 err_i = np.linalg.norm(signal_recon[i] - signal[i]) / np.linalg.norm(signal[i])
@@ -493,7 +494,7 @@ def rank_league_table(league_table: str,
     print(f"League table - new ranking!")
 
 
-def score_all_submissions(
+def score_all_solutions(
     dro_file,
     data_file,
     league_table

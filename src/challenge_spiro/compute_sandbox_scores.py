@@ -49,7 +49,7 @@ Execute this script from your terminal to run integration tests across the chall
 import os
 import dcmri as dc
 
-from challenge_spiro.utils.score import score_all_submissions
+from challenge_spiro.utils.score import score_all_solutions
 from challenge_spiro.utils.dro import generate_dro
 
 # ==============================================================================
@@ -77,4 +77,4 @@ generate_dro(my_seed, my_dro_file)
 # 3. AUTOMATED BATCH SCORING EXECUTION
 # ==============================================================================
 # Process model performance evaluations against the mock reference materials
-score_all_submissions(my_dro_file, my_data_file, my_league_table)
+score_all_solutions(my_dro_file, my_data_file, my_league_table)
